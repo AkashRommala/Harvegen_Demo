@@ -49,3 +49,4 @@ Thumbs.db
 
 # Data files (generated at runtime)
 data/
+.env
