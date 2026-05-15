@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+  
+  body {
+    @apply bg-white text-slate-900;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  
+  /* Stylish font stack */
+  :root {
+    --font-display: 'Inter', 'Georgia', serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font-sans: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-size-base: 16px;
+  }
+  
+  * {
+    font-family: var(--font-sans);
+  }
+  
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 text-white font-semibold px-4 py-2 rounded-md shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-primary-700 border border-primary-200 font-semibold px-4 py-2 rounded-md hover:bg-primary-50 transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg p-6 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 bg-clip-text text-transparent;
+  }
+  
+  .glass {
+    @apply bg-white/80 backdrop-blur-sm border border-gray-100;
+  }
+}
+
+@layer utilities {
+  .text-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
+
+/* Toast notification styles */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 9999;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+#toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Hero Banner Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Hide footer and bottom nav on tutorial detail pages */
+.tutorial-page + footer,
+.tutorial-page ~ footer,
+body:has(.tutorial-page) footer,
+.tutorial-page + * + footer,
+body:has(.tutorial-page) + footer {
+  display: none !important;
+}
+
+.tutorial-page + * + #bottom-nav,
+body:has(.tutorial-page) #bottom-nav {
+  display: none !important;
+}
