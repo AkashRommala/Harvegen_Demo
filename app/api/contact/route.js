@@ -27,7 +27,7 @@ export const POST = withErrorHandler(async (request) => {
 
 // GET /api/contact — admin only, list all leads
 export const GET = withErrorHandler(async (request) => {
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

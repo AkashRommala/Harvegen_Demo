@@ -11,8 +11,9 @@ import {
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: FiBarChart2 },
   { href: '/admin/projects', label: 'Projects', icon: FiLayers },
-  { href: '/admin/categories', label: 'Categories', icon: FiBookOpen },
-  { href: '/admin/tutorials', label: 'Tutorials', icon: FiBookOpen },
+  { href: '/admin/courses', label: 'Courses', icon: FiBookOpen },
+  { href: '/admin/tutorials', label: 'Tutorials (Modules)', icon: FiLayers },
+  { href: '/admin/articles', label: 'Articles', icon: FiBookOpen },
   { href: '/admin/resources', label: 'Resources', icon: FiPackage },
   { href: '/admin/hero-slider', label: 'Hero Slider', icon: FiImage },
   { href: '/admin/users', label: 'Users', icon: FiMail },

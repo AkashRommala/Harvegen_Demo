@@ -1,18 +1,16 @@
 import connectDB from '@/lib/mongodb'
-import Project from '@/models/Project'
-import { ProjectUpdateSchema } from '@/lib/validations'
+import Article from '@/models/Article'
+import { ArticleUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '@/lib/apiHelpers'
 
-// GET /api/projects/[slug]
 export const GET = withErrorHandler(async (_, props) => {
   const params = await props.params;
   await connectDB()
-  const project = await Project.findOne({ slug: params.slug }).lean()
-  if (!project) return errorResponse('Project not found', 404)
-  return successResponse(project)
+  const article = await Article.findOne({ slug: params.slug }).lean()
+  if (!article) return errorResponse('Article not found', 404)
+  return successResponse(article)
 })
 
-// PUT /api/projects/[slug]
 export const PUT = withErrorHandler(async (request, props) => {
   const params = await props.params;
   const guard = await requireAdmin(request)
@@ -20,27 +18,26 @@ export const PUT = withErrorHandler(async (request, props) => {
 
   await connectDB()
   const body = await request.json()
-  const parsed = ProjectUpdateSchema.safeParse(body)
+  const parsed = ArticleUpdateSchema.safeParse(body)
   if (!parsed.success) {
     return errorResponse('Validation failed', 422, parsed.error.flatten().fieldErrors)
   }
 
-  const project = await Project.findOneAndUpdate({ slug: params.slug }, parsed.data, {
+  const article = await Article.findOneAndUpdate({ slug: params.slug }, parsed.data, {
     new: true,
     runValidators: true,
   })
-  if (!project) return errorResponse('Project not found', 404)
-  return successResponse(project)
+  if (!article) return errorResponse('Article not found', 404)
+  return successResponse(article)
 })
 
-// DELETE /api/projects/[slug]
 export const DELETE = withErrorHandler(async (request, props) => {
   const params = await props.params;
   const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()
-  const project = await Project.findOneAndDelete({ slug: params.slug })
-  if (!project) return errorResponse('Project not found', 404)
-  return successResponse({ message: 'Project deleted successfully' })
+  const article = await Article.findOneAndDelete({ slug: params.slug })
+  if (!article) return errorResponse('Article not found', 404)
+  return successResponse({ message: 'Article deleted successfully' })
 })

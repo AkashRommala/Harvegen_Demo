@@ -4,48 +4,18 @@ const TutorialSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, unique: true, index: true },
-    category: {
-      type: String,
+    course: {
+      type: String, // Storing the slug as reference instead of ObjectId to match previous patterns
       required: true,
       index: true,
     },
-    description: { type: String, required: true, trim: true },
-    summary: { type: String, default: '' },
-
-    // Pill-shaped topic tags shown at the top (legacy)
-    topics: [{ type: String, trim: true }],
-
-    // What You'll Learn section — checklist items
-    whatYoullLearn: [{ type: String, trim: true }],
-
-    // Topics Covered section — displayed as pill chips
-    topicsCovered: [{ type: String, trim: true }],
-
-    // Structured content sections — replaces raw markdownContent
-    sections: [{
-      heading: { type: String, required: true },
-      description: { type: String, required: true },
+    description: { type: String, default: '', trim: true },
+    
+    // Ordered list of articles that belong to this tutorial
+    articles: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Article'
     }],
-
-    // Callout boxes
-    practiceExercises: [{ type: String }],
-    prerequisites: [{ type: String }],
-    additionalResources: [{ label: { type: String }, url: { type: String } }],
-
-    // Interactive code playground snippets
-    codeSections: [{
-      title: { type: String, required: true },
-      language: { type: String, default: 'c' },
-      initialCode: { type: String, required: true },
-    }],
-
-    time: { type: String, required: true },
-    difficulty: {
-      type: String,
-      enum: ['Beginner', 'Intermediate', 'Advanced'],
-      required: true,
-    },
-    featured: { type: Boolean, default: false },
   },
   { timestamps: true }
 )
@@ -62,11 +32,9 @@ TutorialSchema.pre('save', async function () {
   }
 })
 
-TutorialSchema.index({ title: 'text', description: 'text' })
-
 // Delete the cached model to force Mongoose to re-compile the schema during development HMR
 if (mongoose.models.Tutorial) {
   delete mongoose.models.Tutorial
 }
 
-export default mongoose.model('Tutorial', TutorialSchema)
+export default mongoose.models.Tutorial || mongoose.model('Tutorial', TutorialSchema)

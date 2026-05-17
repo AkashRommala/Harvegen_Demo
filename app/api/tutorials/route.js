@@ -7,21 +7,18 @@ import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '
 export const GET = withErrorHandler(async (request) => {
   await connectDB()
   const { searchParams } = new URL(request.url)
-  const category = searchParams.get('category')
-  const difficulty = searchParams.get('difficulty')
-  const featured = searchParams.get('featured')
+  const course = searchParams.get('course')
   const q = searchParams.get('q')
   const page = parseInt(searchParams.get('page') || '1', 10)
-  const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100)
-
+  const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 200)
+  
   const filter = {}
-  if (category) filter.category = category
-  if (difficulty) filter.difficulty = difficulty
-  if (featured === 'true') filter.featured = true
-  if (q) filter.$text = { $search: q }
+  if (course) filter.course = course
+  if (q) filter.title = { $regex: q, $options: 'i' }
 
   const [tutorials, total] = await Promise.all([
     Tutorial.find(filter)
+      .populate('articles', 'title slug time difficulty description')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -34,7 +31,7 @@ export const GET = withErrorHandler(async (request) => {
 
 // POST /api/tutorials
 export const POST = withErrorHandler(async (request) => {
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

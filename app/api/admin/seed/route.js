@@ -81,7 +81,7 @@ const SEED_HERO_SLIDES = [
 
 // POST /api/admin/seed — seeds the database from hardcoded data (admin only)
 export const POST = withErrorHandler(async (request) => {
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

@@ -3,17 +3,20 @@ import Tutorial from '@/models/Tutorial'
 import { TutorialUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '@/lib/apiHelpers'
 
-export const GET = withErrorHandler(async (_, props) => {
+export const GET = withErrorHandler(async (request, props) => {
   const params = await props.params;
   await connectDB()
-  const tutorial = await Tutorial.findOne({ slug: params.slug }).lean()
+  const tutorial = await Tutorial.findOne({ slug: params.slug })
+    .populate('articles')
+    .lean()
+    
   if (!tutorial) return errorResponse('Tutorial not found', 404)
   return successResponse(tutorial)
 })
 
 export const PUT = withErrorHandler(async (request, props) => {
   const params = await props.params;
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()
@@ -33,7 +36,7 @@ export const PUT = withErrorHandler(async (request, props) => {
 
 export const DELETE = withErrorHandler(async (request, props) => {
   const params = await props.params;
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

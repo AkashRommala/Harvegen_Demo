@@ -6,7 +6,7 @@ import { errorResponse, withErrorHandler, requireAdmin } from '@/lib/apiHelpers'
 // PUT /api/users/[id] (To promote to admin)
 export const PUT = withErrorHandler(async (request, props) => {
   const params = await props.params
-  const authResponse = requireAdmin(request)
+  const authResponse = await requireAdmin(request)
   if (authResponse) return authResponse
 
   await connectDB()
@@ -31,7 +31,7 @@ export const PUT = withErrorHandler(async (request, props) => {
 // DELETE /api/users/[id]
 export const DELETE = withErrorHandler(async (request, props) => {
   const params = await props.params
-  const authResponse = requireAdmin(request)
+  const authResponse = await requireAdmin(request)
   if (authResponse) return authResponse
 
   await connectDB()

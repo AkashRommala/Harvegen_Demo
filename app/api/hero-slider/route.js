@@ -11,7 +11,7 @@ export const GET = withErrorHandler(async () => {
 })
 
 export const POST = withErrorHandler(async (request) => {
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

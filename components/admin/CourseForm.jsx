@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { FiSave, FiLoader } from 'react-icons/fi'
 
-export default function CategoryForm({ initial, isNew, endpoint, headers, onSuccess, onCancel }) {
+export default function CourseForm({ initial, isNew, endpoint, headers, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
     name: initial?.name || '',
     slug: initial?.slug || '',
@@ -31,7 +31,7 @@ export default function CategoryForm({ initial, isNew, endpoint, headers, onSucc
       })
       const json = await res.json()
 
-      if (!json.success) throw new Error(json.error || 'Failed to save category')
+      if (!json.success) throw new Error(json.error || 'Failed to save course')
       onSuccess()
     } catch (err) {
       setError(err.message)
@@ -47,7 +47,7 @@ export default function CategoryForm({ initial, isNew, endpoint, headers, onSucc
       {error && <div className="bg-red-900/30 border border-red-500/50 text-red-400 p-3 rounded-lg text-sm">{error}</div>}
 
       <div>
-        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Category Name *</label>
+        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Course Name *</label>
         <input
           required
           value={formData.name}

@@ -15,18 +15,17 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className="font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 h-screen overflow-hidden flex flex-col" suppressHydrationWarning>
+      <body className="font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 min-h-screen flex flex-col" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <UserProvider>
             <ThemeController />
             <Navbar />
-            <main id="main-scroll-container" className="flex-1 overflow-y-auto relative">
+            <main id="main-scroll-container" className="flex-1 min-h-0 relative">
               {children}
               <Footer />
             </main>

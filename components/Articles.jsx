@@ -5,10 +5,16 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { TutorialCardSkeleton } from './ui/skeletons'
 
-function Tutorials() {
-  const [activeTab, setActiveTab] = useState('')
+const DIFFICULTY_COLORS = {
+  Beginner: 'text-emerald-700 border-emerald-200 bg-emerald-50',
+  Intermediate: 'text-amber-700 border-amber-200 bg-amber-50',
+  Advanced: 'text-red-700 border-red-200 bg-red-50',
+}
+
+function Articles() {
   const [courses, setCourses] = useState([])
-  const [tutorials, setTutorials] = useState([])
+  const [activeTab, setActiveTab] = useState('')
+  const [modules, setModules] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -27,7 +33,7 @@ function Tutorials() {
       .catch(console.error)
   }, [])
 
-  const fetchTutorials = useCallback(async () => {
+  const fetchModules = useCallback(async () => {
     if (!activeTab) return
     setLoading(true)
     setError(null)
@@ -36,7 +42,7 @@ function Tutorials() {
       const res = await fetch(`/api/tutorials?${params}`)
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      setTutorials(json.data.tutorials || [])
+      setModules(json.data.tutorials || [])
       setTotal(json.data.total || 0)
     } catch (err) {
       setError(err.message)
@@ -45,7 +51,7 @@ function Tutorials() {
     }
   }, [activeTab, page])
 
-  useEffect(() => { if (activeTab) fetchTutorials() }, [fetchTutorials, activeTab])
+  useEffect(() => { if (activeTab) fetchModules() }, [fetchModules, activeTab])
 
   const totalPages = Math.ceil(total / limit)
 
@@ -57,17 +63,17 @@ function Tutorials() {
           <div className="text-sm text-gray-500 mb-4 sm:mb-6 font-mono">
             <Link href="/" className="text-gray-400 hover:text-primary-600 transition-colors">Home</Link>
             <span className="text-gray-400"> / </span>
-            <span className="text-primary-600">Tutorials</span>
+            <span className="text-primary-600">Articles</span>
           </div>
           <div className="space-y-4 sm:space-y-6">
             <div className="inline-flex items-center gap-3 mb-2 sm:mb-4 font-semibold text-sm tracking-widest uppercase text-primary-600">
-              <span className="w-8 h-px bg-primary-600" /> Learning Modules
+              <span className="w-8 h-px bg-primary-600" /> Learning Resources
             </div>
             <h1 className="text-gray-900 font-display text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
-              Embedded Systems<br /><span className="text-primary-600">Tutorials</span>
+              Embedded Systems<br /><span className="text-primary-600">Articles</span>
             </h1>
             <p className="text-gray-600 text-base sm:text-xl max-w-[600px] leading-relaxed">
-              From beginner to advanced — Embedded C, MCU peripherals, communication protocols, and RTOS.
+              Browse by course — select a module to read its in-depth articles.
             </p>
           </div>
         </div>
@@ -97,43 +103,43 @@ function Tutorials() {
           {error && (
             <div className="text-center py-20">
               <p className="text-red-500 mb-4">{error}</p>
-              <Button onClick={fetchTutorials} variant="outline">Try Again</Button>
+              <Button onClick={fetchModules} variant="outline">Try Again</Button>
             </div>
           )}
 
-          {/* Module cards grid */}
+          {/* Module cards — clicking goes to GFG-style reader */}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {loading
               ? Array(6).fill(0).map((_, i) => <TutorialCardSkeleton key={i} />)
-              : tutorials.length === 0
+              : modules.length === 0
               ? (
                 <div className="col-span-3 text-center py-20">
                   <p className="text-gray-400 text-lg mb-2">No modules in this course yet</p>
                   <p className="text-gray-500 text-sm">Content is being added. Check back soon!</p>
                 </div>
               )
-              : tutorials.map((tut) => (
+              : modules.map((mod) => (
                 <Link
-                  href={`/tutorials/${tut.slug}`}
-                  key={tut._id}
+                  href={`/tutorials/${mod.slug}`}
+                  key={mod._id}
                   className="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:border-primary-500 hover:-translate-y-1 transition-all duration-300 no-underline"
                 >
-                  {tut.imageURL && (
+                  {mod.imageURL && (
                     <div className="h-[160px] overflow-hidden relative">
-                      <img src={tut.imageURL} alt={tut.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={mod.imageURL} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                   )}
                   <div className="p-6">
                     <div className="flex gap-2 flex-wrap mb-3">
                       <span className="px-3 py-1 rounded-lg text-xs font-bold tracking-wider uppercase border text-violet-700 border-violet-200 bg-violet-50">
-                        {tut.articles?.length || 0} Articles
+                        {mod.articles?.length || 0} Articles
                       </span>
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-primary-600 transition-colors line-clamp-2">{tut.title}</h3>
-                    <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">{tut.description}</p>
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-primary-600 transition-colors line-clamp-2">{mod.title}</h3>
+                    <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">{mod.description}</p>
                     <div className="flex items-center justify-end">
-                      <Button variant="default" size="sm" className="shadow-md hover:shadow-lg">View Module</Button>
+                      <Button variant="default" size="sm" className="shadow-md hover:shadow-lg">Read Articles</Button>
                     </div>
                   </div>
                 </Link>
@@ -172,4 +178,4 @@ function Tutorials() {
   )
 }
 
-export default Tutorials
+export default Articles

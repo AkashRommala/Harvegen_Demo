@@ -5,46 +5,39 @@ import AdminTable from '@/components/admin/AdminTable'
 import TutorialForm from '@/components/admin/TutorialForm'
 
 export default function AdminTutorialsPage() {
-  const [categories, setCategories] = useState([])
-  const [categoryLabels, setCategoryLabels] = useState({})
+  const [courses, setCourses] = useState([])
+  const [courseLabels, setCourseLabels] = useState({})
 
   useEffect(() => {
-    fetch('/api/categories')
+    fetch('/api/courses')
       .then(res => res.json())
       .then(json => {
         if (json.success) {
-          const catList = json.data
-          setCategories(catList.map(c => ({ value: c.slug, label: c.name })))
+          const courseList = json.data
+          setCourses(courseList.map(c => ({ value: c.slug, label: c.name })))
           const labels = {}
-          catList.forEach(c => { labels[c.slug] = c.name })
-          setCategoryLabels(labels)
+          courseList.forEach(c => { labels[c.slug] = c.name })
+          setCourseLabels(labels)
         }
       })
   }, [])
 
   const columns = [
-    { key: 'imageURL', label: '', render: (v) => v ? <img src={v} alt="" className="w-10 h-10 rounded-lg object-cover" /> : <div className="w-10 h-10 rounded-lg bg-gray-700" /> },
-    { key: 'title', label: 'Title' },
-    { key: 'category', label: 'Category', render: v => <span className="text-xs text-primary-400 font-medium">{categoryLabels[v] || v}</span> },
-    { key: 'difficulty', label: 'Level', render: v => {
-      const colors = { Beginner: 'text-emerald-400', Intermediate: 'text-amber-400', Advanced: 'text-red-400' }
-      return <span className={`text-xs font-bold ${colors[v] || 'text-gray-400'}`}>{v}</span>
-    }},
-    { key: 'time', label: 'Duration' },
-    { key: 'featured', label: 'Featured', render: v => <span className={`text-xs ${v ? 'text-emerald-400' : 'text-gray-600'}`}>{v ? '★ Yes' : 'No'}</span> },
+    { key: 'title', label: 'Title', render: v => <span className="font-semibold text-white">{v}</span> },
+    { key: 'course', label: 'Course', render: v => <span className="text-xs text-primary-400 font-medium">{courseLabels[v] || v}</span> },
+    { key: 'articles', label: 'Articles Mapped', render: v => <span className="text-gray-400 text-sm">{v?.length || 0} articles</span> },
   ]
 
   return (
     <AdminTable
-      title="Tutorials"
+      title="Tutorial Modules"
       endpoint="/api/tutorials"
       columns={columns}
       idField="slug"
       rowIdentifier={(r) => r.title}
-      filterOptions={categories}
-      queryKey="category"
+      filterOptions={courses}
+      queryKey="course"
       renderForm={(props) => <TutorialForm {...props} />}
     />
   )
 }
-

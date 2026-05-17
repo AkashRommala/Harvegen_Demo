@@ -18,7 +18,7 @@ export default function AdminTable({
   rowIdentifier = (row) => row.title || row.name || row._id,
   queryKey = '',
 }) {
-  const { user } = useUser()
+  const { user, hydrated } = useUser()
   const [rows, setRows] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -31,16 +31,22 @@ export default function AdminTable({
   const [actionLoading, setActionLoading] = useState(false)
   const limit = 10
 
-  const headers = { 'x-user-role': user?.role || '', 'x-user-email': user?.email || '' }
+  // Build auth headers — always use current user values
+  const getHeaders = () => ({
+    'x-user-role': user?.role || '',
+    'x-user-email': user?.email || '',
+  })
 
   const fetchRows = useCallback(async () => {
+    // Don't fetch until hydration is complete (user loaded from localStorage)
+    if (!hydrated) return
     setLoading(true)
     setError(null)
     try {
       const params = new URLSearchParams({ page, limit })
       if (search) params.set('q', search)
       if (filter) params.set(queryKey || 'filter', filter)
-      const res = await fetch(`${endpoint}?${params}`)
+      const res = await fetch(`${endpoint}?${params}`, { headers: getHeaders() })
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
       // Support both { data: [...] } and { data: { items: [...], total } }
@@ -53,7 +59,8 @@ export default function AdminTable({
     } finally {
       setLoading(false)
     }
-  }, [endpoint, page, search, filter, queryKey])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint, page, search, filter, queryKey, hydrated, user])
 
   useEffect(() => { fetchRows() }, [fetchRows])
 
@@ -62,7 +69,7 @@ export default function AdminTable({
     setActionLoading(true)
     try {
       const id = deleteTarget[idField] || deleteTarget._id
-      const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE', headers })
+      const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE', headers: getHeaders() })
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
       setDeleteTarget(null)
@@ -219,7 +226,7 @@ export default function AdminTable({
                 initial: editing === 'new' ? {} : editing,
                 isNew: editing === 'new',
                 endpoint,
-                headers,
+                headers: getHeaders(),
                 onSuccess: () => { setEditing(null); fetchRows() },
                 onCancel: () => setEditing(null),
               })}

@@ -7,6 +7,8 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   
   body {
@@ -14,6 +16,11 @@
     font-size: 16px;
     line-height: 1.6;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
   
   /* Stylish font stack */
@@ -116,22 +123,23 @@
   opacity: 1;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — light theme compatible */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94a3b8;
 }
 
 /* Hero Banner Animations */

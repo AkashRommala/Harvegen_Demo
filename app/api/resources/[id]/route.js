@@ -13,7 +13,7 @@ export const GET = withErrorHandler(async (_, props) => {
 
 export const PUT = withErrorHandler(async (request, props) => {
   const params = await props.params;
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()
@@ -33,7 +33,7 @@ export const PUT = withErrorHandler(async (request, props) => {
 
 export const DELETE = withErrorHandler(async (request, props) => {
   const params = await props.params;
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   await connectDB()

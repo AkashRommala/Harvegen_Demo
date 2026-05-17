@@ -2,7 +2,7 @@ import { uploadToCloudinary } from '@/lib/cloudinary'
 import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '@/lib/apiHelpers'
 
 export const POST = withErrorHandler(async (request) => {
-  const guard = requireAdmin(request)
+  const guard = await requireAdmin(request)
   if (guard) return guard
 
   const formData = await request.formData()
