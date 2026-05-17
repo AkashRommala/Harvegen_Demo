@@ -12,20 +12,34 @@ const TutorialSchema = new mongoose.Schema(
     },
     description: { type: String, required: true, trim: true },
     summary: { type: String, default: '' },
-    learningPoints: [{ type: String }],
-    markdownContent: { type: String, required: true },
+
+    // Pill-shaped topic tags shown at the top
+    topics: [{ type: String, trim: true }],
+
+    // Structured content sections — replaces raw markdownContent
+    sections: [{
+      heading: { type: String, required: true },
+      description: { type: String, required: true },
+    }],
+
+    // Callout boxes
+    practiceExercises: [{ type: String }],
+    prerequisites: [{ type: String }],
+    additionalResources: [{ label: { type: String }, url: { type: String } }],
+
+    // Interactive code playground snippets
     codeSections: [{
       title: { type: String, required: true },
       language: { type: String, default: 'c' },
-      initialCode: { type: String, required: true }
+      initialCode: { type: String, required: true },
     }],
-    time: { type: String, required: true }, // e.g. "25 min"
+
+    time: { type: String, required: true },
     difficulty: {
       type: String,
       enum: ['Beginner', 'Intermediate', 'Advanced'],
       required: true,
     },
-    imageURL: { type: String, default: '' },
     featured: { type: Boolean, default: false },
   },
   { timestamps: true }

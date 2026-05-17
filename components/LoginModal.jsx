@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   FiMail, FiX, FiShield, FiCheckCircle, FiUser,
-  FiArrowLeft, FiLoader, FiLock, FiEye, FiEyeOff
+  FiArrowLeft, FiLoader, FiLock, FiEye, FiEyeOff, FiLogIn
 } from 'react-icons/fi'
 
 const BRANCH_OPTIONS = [
@@ -19,14 +19,14 @@ const BRANCH_OPTIONS = [
 ]
 
 /**
- * LoginModal — two-mode OTP auth flow:
+ * LoginModal — two-mode auth:
  *
- * SIGN-IN:  email + password → send OTP → verify OTP
- * SIGN-UP:  email + password + name + college + branch → send OTP → verify OTP → account created
+ * SIGN-IN:  email + password → direct login via /api/auth/login (no OTP needed)
+ * SIGN-UP:  name + email + password + college + branch → send OTP → verify OTP → account created
  */
 export default function LoginModal({ isOpen, onClose, onLogin }) {
-  const [mode, setMode] = useState('signin')         // 'signin' | 'signup'
-  const [step, setStep] = useState('form')           // 'form' | 'otp'
+  const [mode, setMode] = useState('signin')   // 'signin' | 'signup'
+  const [step, setStep] = useState('form')     // 'form' | 'otp'
 
   // Shared fields
   const [email, setEmail] = useState('')
@@ -52,26 +52,43 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
   }
 
   const switchMode = (m) => { setMode(m); reset() }
-
   const handleClose = () => { reset(); onClose() }
 
-  // ── STEP 1: Validate form + Send OTP ─────────────────────────────────────
-  const handleFormSubmit = async (e) => {
+  // ── SIGN-IN: Direct login — no OTP ─────────────────────────────────────────
+  const handleSignIn = async (e) => {
     e.preventDefault()
     setError('')
-
-    if (mode === 'signup' && !name.trim()) {
-      setError('Please enter your name.')
-      return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || 'Invalid email or password.')
+      onLogin(json.data)
+      reset()
+      onClose()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  // ── SIGN-UP STEP 1: Send OTP ────────────────────────────────────────────────
+  const handleSendOtp = async (e) => {
+    e.preventDefault()
+    setError('')
+    if (!name.trim()) { setError('Please enter your full name.'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode,
+          mode: 'signup',
           email: email.trim().toLowerCase(),
           password,
           name: name.trim(),
@@ -89,7 +106,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
     }
   }
 
-  // ── STEP 2: Verify OTP ────────────────────────────────────────────────────
+  // ── SIGN-UP STEP 2: Verify OTP ─────────────────────────────────────────────
   const handleOtpSubmit = async (e) => {
     e.preventDefault()
     if (otp.length !== 6) { setError('Please enter the 6-digit code.'); return }
@@ -120,8 +137,12 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode, email: email.trim().toLowerCase(), password,
-          name: name.trim(), college: college.trim(), branch,
+          mode: 'signup',
+          email: email.trim().toLowerCase(),
+          password,
+          name: name.trim(),
+          college: college.trim(),
+          branch,
         }),
       })
       const json = await res.json()
@@ -133,7 +154,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
     }
   }
 
-  const inputCls = 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all text-sm bg-white'
+  const inputCls = 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all text-sm bg-white text-gray-900 placeholder-gray-400'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -141,79 +162,51 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[440px] bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
-
-        {/* Header */}
-        <div className="bg-gradient-to-br from-[#1e3a8a] to-primary-600 px-6 pt-7 pb-8 text-center flex-shrink-0">
-          <h2 className="text-xl font-bold text-white">Welcome to Harvegen</h2>
-          <p className="text-white/70 text-sm mt-1">
-            {step === 'form' ? 'Sign in or create a free account' : `OTP sent to ${email}`}
-          </p>
-        </div>
+      <div className="relative w-full max-w-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
 
         {/* Close */}
-        <button onClick={handleClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors p-1">
+        <button onClick={handleClose} className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors p-1">
           <FiX className="w-5 h-5" />
         </button>
 
-        {/* Tab switcher (form step only) */}
-        {step === 'form' && (
-          <div className="flex border-b border-gray-100 flex-shrink-0">
-            {['signin', 'signup'].map(m => (
-              <button
-                key={m}
-                onClick={() => switchMode(m)}
-                className={`flex-1 py-3 text-sm font-semibold transition-all ${
-                  mode === m
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                {m === 'signin' ? 'Sign In' : 'Sign Up'}
-              </button>
-            ))}
+        {/* Header Banner */}
+        <div className="bg-gradient-to-br from-[#1e3a8a] to-primary-600 px-6 pt-7 pb-8 text-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+            {mode === 'signin'
+              ? <FiLogIn className="w-5 h-5 text-white" />
+              : <FiUser className="w-5 h-5 text-white" />
+            }
           </div>
-        )}
+          <h2 className="text-xl font-bold text-white">
+            {step === 'otp' ? 'Check your inbox' : mode === 'signin' ? 'Welcome back' : 'Create your account'}
+          </h2>
+          <p className="text-white/70 text-sm mt-1">
+            {step === 'otp'
+              ? `6-digit code sent to ${email}`
+              : mode === 'signin'
+              ? 'Sign in to continue to Harvegen'
+              : 'Join the embedded systems community'
+            }
+          </p>
+        </div>
 
-        {/* Scrollable body */}
+        {/* Scrollable Body */}
         <div className="overflow-y-auto flex-1">
 
-          {/* ── FORM STEP ──────────────────────────────────────────────────── */}
-          {step === 'form' && (
-            <form onSubmit={handleFormSubmit} className="px-6 py-5 space-y-3.5">
-
-              {/* Name (signup only) */}
-              {mode === 'signup' && (
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name *</label>
-                  <div className="relative">
-                    <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      placeholder="Enter your full name"
-                      required
-                      className={`${inputCls} pl-9`}
-                    />
-                  </div>
-                </div>
-              )}
+          {/* ═══════════════════════════════════════════
+              SIGN-IN FORM (direct login — no OTP)
+              ═══════════════════════════════════════════ */}
+          {mode === 'signin' && step === 'form' && (
+            <form onSubmit={handleSignIn} className="px-6 py-6 space-y-4">
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Email Address *
-                </label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Email Address</label>
                 <div className="relative">
                   <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    autoFocus={mode === 'signin'}
+                    type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com" required autoFocus
                     className={`${inputCls} pl-9`}
                   />
                 </div>
@@ -221,60 +214,21 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Password * {mode === 'signup' && <span className="font-normal text-gray-400">(min 6 characters)</span>}
-                </label>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Password</label>
                 <div className="relative">
                   <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
+                    type={showPassword ? 'text' : 'password'} value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder={mode === 'signin' ? 'Your password' : 'Create a password'}
-                    required
-                    minLength={6}
+                    placeholder="Your password" required minLength={6}
                     className={`${inputCls} pl-9 pr-10`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(s => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    tabIndex={-1}
-                  >
+                  <button type="button" onClick={() => setShowPassword(s => !s)} tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-
-              {/* College (signup only) */}
-              {mode === 'signup' && (
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">College / Organization</label>
-                  <input
-                    type="text"
-                    value={college}
-                    onChange={e => setCollege(e.target.value)}
-                    placeholder="e.g. IIT Hyderabad, BITS Pilani"
-                    className={inputCls}
-                  />
-                </div>
-              )}
-
-              {/* Branch (signup only) */}
-              {mode === 'signup' && (
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Branch / Field of Interest</label>
-                  <select
-                    value={branch}
-                    onChange={e => setBranch(e.target.value)}
-                    className={`${inputCls} text-gray-700`}
-                  >
-                    {BRANCH_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2.5 rounded-xl text-sm">
@@ -285,21 +239,134 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
               <button
                 type="submit"
                 disabled={loading || !email.trim() || !password}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all text-sm mt-1"
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all text-sm"
               >
                 {loading
                   ? <FiLoader className="w-4 h-4 animate-spin" />
-                  : <><FiShield className="w-4 h-4" /> {mode === 'signin' ? 'Send OTP to Sign In' : 'Send OTP to Sign Up'}</>
+                  : <><FiLogIn className="w-4 h-4" /> Sign In</>
                 }
               </button>
 
-              <p className="text-center text-xs text-gray-400 pb-1">
-                By continuing, you agree to our Terms of Service.
+              {/* Switch to Signup */}
+              <p className="text-center text-sm text-gray-500 pb-2">
+                Don&apos;t have an account?{' '}
+                <button type="button" onClick={() => switchMode('signup')}
+                  className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+                  Sign up here
+                </button>
               </p>
             </form>
           )}
 
-          {/* ── OTP STEP ───────────────────────────────────────────────────── */}
+          {/* ═══════════════════════════════════════════
+              SIGN-UP FORM (OTP flow)
+              ═══════════════════════════════════════════ */}
+          {mode === 'signup' && step === 'form' && (
+            <form onSubmit={handleSendOtp} className="px-6 py-5 space-y-3.5">
+
+              {/* Back to Sign In */}
+              <button type="button" onClick={() => switchMode('signin')}
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-1">
+                <FiArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
+              </button>
+
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Full Name *</label>
+                <div className="relative">
+                  <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text" value={name} onChange={e => setName(e.target.value)}
+                    placeholder="Enter your full name" required autoFocus
+                    className={`${inputCls} pl-9`}
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Email Address *</label>
+                <div className="relative">
+                  <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com" required
+                    className={`${inputCls} pl-9`}
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                  Password * <span className="normal-case font-normal text-gray-400">(min 6 characters)</span>
+                </label>
+                <div className="relative">
+                  <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type={showPassword ? 'text' : 'password'} value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Create a password" required minLength={6}
+                    className={`${inputCls} pl-9 pr-10`}
+                  />
+                  <button type="button" onClick={() => setShowPassword(s => !s)} tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* College */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">College / Organization</label>
+                <input
+                  type="text" value={college} onChange={e => setCollege(e.target.value)}
+                  placeholder="e.g. IIT Hyderabad, BITS Pilani"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Branch */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Branch / Field of Interest</label>
+                <select value={branch} onChange={e => setBranch(e.target.value)}
+                  className={`${inputCls} text-gray-700`}>
+                  {BRANCH_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2.5 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || !email.trim() || !password || !name.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-all text-sm mt-1"
+              >
+                {loading
+                  ? <FiLoader className="w-4 h-4 animate-spin" />
+                  : <><FiShield className="w-4 h-4" /> Send Verification OTP</>
+                }
+              </button>
+
+              <p className="text-center text-xs text-gray-400 pb-1">
+                Already have an account?{' '}
+                <button type="button" onClick={() => switchMode('signin')}
+                  className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+                  Sign in
+                </button>
+              </p>
+            </form>
+          )}
+
+          {/* ═══════════════════════════════════════════
+              OTP VERIFICATION (signup only)
+              ═══════════════════════════════════════════ */}
           {step === 'otp' && (
             <div className="px-6 py-5 space-y-4">
               <button
@@ -314,21 +381,19 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
                 <p className="text-gray-700 text-sm">
                   We sent a 6-digit code to <span className="font-semibold text-gray-900">{email}</span>
                 </p>
-                <p className="text-gray-400 text-xs mt-1">Expires in 5 minutes</p>
+                <p className="text-gray-400 text-xs mt-1">Expires in 5 minutes · Check your spam folder</p>
               </div>
 
               <form onSubmit={handleOtpSubmit} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">Verification Code</label>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Verification Code</label>
                   <input
-                    type="text"
-                    inputMode="numeric"
+                    type="text" inputMode="numeric"
                     value={otp}
                     onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="· · · · · ·"
-                    maxLength={6}
-                    autoFocus
-                    className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all text-center text-2xl font-mono tracking-widest"
+                    maxLength={6} autoFocus
+                    className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all text-center text-2xl font-mono tracking-widest text-gray-900"
                   />
                 </div>
 
@@ -345,18 +410,16 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
                 >
                   {loading
                     ? <FiLoader className="w-4 h-4 animate-spin" />
-                    : <><FiCheckCircle className="w-4 h-4" /> Verify & {mode === 'signup' ? 'Create Account' : 'Sign In'}</>
+                    : <><FiCheckCircle className="w-4 h-4" /> Verify & Create Account</>
                   }
                 </button>
 
                 <div className="text-center pb-2">
                   <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={loading}
+                    type="button" onClick={handleResend} disabled={loading}
                     className="text-primary-600 hover:text-primary-700 text-sm font-medium disabled:opacity-50 transition-colors"
                   >
-                    Didn't receive it? Resend OTP
+                    Didn&apos;t receive it? Resend OTP
                   </button>
                 </div>
               </form>

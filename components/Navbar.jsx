@@ -90,7 +90,10 @@ function Navbar() {
             : 'bg-white/80 backdrop-blur-sm border-b border-gray-100'
         }`}
       >
-        <div className="flex items-center h-[64px] max-w-[1200px] mx-auto pr-4">
+        <div className="flex justify-between items-center h-[72px] max-w-[1400px] mx-auto px-6 lg:px-12 w-full">
+
+          {/* LOGO (Left) */}
+          <div className="flex flex-1 items-center justify-start">
 
           {/* LOGO */}
           <Link href="/" className={`flex items-center gap-2 font-bold flex-shrink-0 ${
@@ -105,9 +108,10 @@ function Navbar() {
               Harvegen
             </span>
           </Link>
+          </div>
 
-          {/* DESKTOP MENU */}
-          <div className="hidden md:flex items-center gap-2 ml-8">
+          {/* DESKTOP MENU (Center) */}
+          <div className="hidden lg:flex flex-none items-center justify-center gap-8">
             {navLinks.map((link) => {
               const active = pathname === link.path
               return (
@@ -135,9 +139,11 @@ function Navbar() {
             })}
           </div>
 
-          {/* SEARCH BAR */}
-          <div className="hidden lg:flex items-center ml-6">
-            <form onSubmit={handleSearch} className={`relative flex items-center rounded-full border transition-all duration-300 ${
+          {/* RIGHT SIDE (Search, Theme, Profile) */}
+          <div className="flex flex-1 items-center justify-end gap-4">
+            {/* SEARCH BAR */}
+            <div className="hidden xl:flex items-center">
+              <form onSubmit={handleSearch} className={`relative flex items-center rounded-full border transition-all duration-300 ${
               isHomePage && !scrolled 
                 ? 'bg-white/10 border-white/20 hover:bg-white/20' 
                 : 'bg-gray-100 border-gray-200 hover:border-gray-300'
@@ -161,10 +167,9 @@ function Navbar() {
                 }`} 
               />
             </form>
-          </div>
+            </div>
 
-          {/* PROFILE BUTTON & THEME */}
-          <div className="flex items-center justify-end ml-auto gap-3">
+            {/* PROFILE BUTTON & THEME */}
             <ThemeToggle />
             
             {isLoggedIn && user ? (
@@ -242,13 +247,29 @@ function Navbar() {
             )}
           </div>
 
-          {/* MOBILE MENU BUTTON - Removed */}
+          {/* MOBILE MENU BUTTON */}
+          <div className="lg:hidden flex items-center ml-4">
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className={`p-2 rounded-lg transition-colors ${
+                isHomePage && !scrolled ? 'text-white hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* MOBILE MENU */}
       <div
-        className={`fixed top-[64px] left-0 right-0 bg-white border-b border-gray-200 shadow-lg transition-all duration-300 ${
+        className={`fixed top-[72px] left-0 right-0 bg-white border-b border-gray-200 shadow-lg transition-all duration-300 lg:hidden ${
           mobileOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}
       >

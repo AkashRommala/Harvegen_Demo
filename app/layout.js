@@ -4,6 +4,7 @@ import Footer from '../components/Footer'
 import BackToTop from '../components/BackToTop'
 import { UserProvider } from '../context/UserContext'
 import { ThemeProvider } from '../components/ThemeProvider'
+import ThemeController from '../components/ThemeController'
 import '../styles/globals.css'
 
 export const metadata = {
@@ -21,8 +22,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">
-        <ThemeProvider attribute="class" defaultTheme="dark">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <UserProvider>
+            <ThemeController />
             <Navbar />
             <main className="min-h-screen pb-30">
               {children}
