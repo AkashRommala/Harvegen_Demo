@@ -51,6 +51,8 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
     featured: initial.featured || false,
     // New structured fields
     topics: initial.topics?.length > 0 ? initial.topics : [''],
+    whatYoullLearn: initial.whatYoullLearn?.length > 0 ? initial.whatYoullLearn : [''],
+    topicsCovered: initial.topicsCovered?.length > 0 ? initial.topicsCovered : [''],
     sections: initial.sections?.length > 0 ? initial.sections : [{ heading: '', description: '' }],
     practiceExercises: initial.practiceExercises?.length > 0 ? initial.practiceExercises : [''],
     prerequisites: initial.prerequisites?.length > 0 ? initial.prerequisites : [''],
@@ -74,10 +76,20 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
-  // ─── Topics ───────────────────────────────────────────────────────────────
+  // ─── Topics (legacy) ─────────────────────────────────────────────────────────────────────────
   const updateTopic = (i, v) => { const a = [...form.topics]; a[i] = v; set('topics', a) }
   const addTopic = () => set('topics', [...form.topics, ''])
   const removeTopic = (i) => { if (form.topics.length === 1) return; set('topics', form.topics.filter((_, x) => x !== i)) }
+
+  // ─── What You'll Learn ─────────────────────────────────────────────────────────────
+  const updateLearnItem = (i, v) => { const a = [...form.whatYoullLearn]; a[i] = v; set('whatYoullLearn', a) }
+  const addLearnItem = () => set('whatYoullLearn', [...form.whatYoullLearn, ''])
+  const removeLearnItem = (i) => { if (form.whatYoullLearn.length === 1) return; set('whatYoullLearn', form.whatYoullLearn.filter((_, x) => x !== i)) }
+
+  // ─── Topics Covered ──────────────────────────────────────────────────────────────
+  const updateCoveredTopic = (i, v) => { const a = [...form.topicsCovered]; a[i] = v; set('topicsCovered', a) }
+  const addCoveredTopic = () => set('topicsCovered', [...form.topicsCovered, ''])
+  const removeCoveredTopic = (i) => { if (form.topicsCovered.length === 1) return; set('topicsCovered', form.topicsCovered.filter((_, x) => x !== i)) }
 
   // ─── Sections ─────────────────────────────────────────────────────────────
   const addSection = () => set('sections', [...form.sections, { heading: '', description: '' }])
@@ -132,6 +144,8 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
       const payload = {
         ...form,
         topics: form.topics.filter(t => t.trim()),
+        whatYoullLearn: form.whatYoullLearn.filter(t => t.trim()),
+        topicsCovered: form.topicsCovered.filter(t => t.trim()),
         sections: cleanSections,
         practiceExercises: form.practiceExercises.filter(p => p.trim()),
         prerequisites: form.prerequisites.filter(p => p.trim()),
@@ -196,7 +210,35 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
         <textarea value={form.summary} onChange={e => set('summary', e.target.value)} rows={2} className={`${input} resize-none`} placeholder="Short intro shown in the purple banner..." />
       </div>
 
-      {/* ── Topics ── */}
+      {/* ── What You'll Learn ── */}
+      <div className={section}>
+        <p className={`${sectionTitle} text-emerald-400`}>🟢 What You&apos;ll Learn</p>
+        <StringListBuilder
+          label="Learning Outcomes"
+          items={form.whatYoullLearn}
+          onAdd={addLearnItem}
+          onRemove={removeLearnItem}
+          onChange={updateLearnItem}
+          placeholder="e.g. Understand GPIO pin configuration"
+          helpText="Each item appears as a checklist entry in the green 'What You'll Learn' card."
+        />
+      </div>
+
+      {/* ── Topics Covered ── */}
+      <div className={section}>
+        <p className={`${sectionTitle} text-violet-400`}>🟣 Topics Covered</p>
+        <StringListBuilder
+          label="Topics Covered"
+          items={form.topicsCovered}
+          onAdd={addCoveredTopic}
+          onRemove={removeCoveredTopic}
+          onChange={updateCoveredTopic}
+          placeholder="e.g. GPIO, Interrupts, PWM, Timers"
+          helpText="Displayed as pill chips in the 'Topics Covered' section."
+        />
+      </div>
+
+      {/* ── Topics (Legacy Tags) ── */}
       <div className={section}>
         <p className={sectionTitle}>🏷️ Topic Tags (Pill-shaped)</p>
         <StringListBuilder

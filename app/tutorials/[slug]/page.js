@@ -2,8 +2,9 @@ import connectDB from '@/lib/mongodb'
 import Tutorial from '@/models/Tutorial'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Clock, BarChart2, ChevronRight, CheckCircle2, Code, BookOpen, ExternalLink, Layers } from 'lucide-react'
+import { Clock, BarChart2, ChevronRight, CheckCircle2, Code, BookOpen, ExternalLink, Layers, Tag, GraduationCap } from 'lucide-react'
 import CodePlayground from '@/components/ui/CodePlayground'
+import FixedPageLayout from '@/components/ui/FixedPageLayout'
 
 export async function generateMetadata(props) {
   const params = await props.params
@@ -42,93 +43,105 @@ export default async function TutorialDetailPage(props) {
     .sort({ createdAt: 1 })
     .lean()
 
-  const topics           = (tutorial.topics || []).filter(Boolean)
-  const sections         = (tutorial.sections || []).filter(s => s.heading && s.description)
-  const prerequisites    = (tutorial.prerequisites || []).filter(Boolean)
-  const practiceExercises = (tutorial.practiceExercises || []).filter(Boolean)
+  const topics              = (tutorial.topics || []).filter(Boolean)
+  const whatYoullLearn      = (tutorial.whatYoullLearn || []).filter(Boolean)
+  const topicsCovered       = (tutorial.topicsCovered || []).filter(Boolean)
+  const sections            = (tutorial.sections || []).filter(s => s.heading && s.description)
+  const prerequisites       = (tutorial.prerequisites || []).filter(Boolean)
+  const practiceExercises   = (tutorial.practiceExercises || []).filter(Boolean)
   const additionalResources = (tutorial.additionalResources || []).filter(r => r.label || r.url)
   const diff = DIFFICULTY_CONFIG[tutorial.difficulty] || DIFFICULTY_CONFIG.Beginner
 
   return (
-    // Force light theme — no dark: classes anywhere in this page
-    <div className="min-h-screen bg-white text-slate-800 font-sans">
-
+    <FixedPageLayout>
       {/* ══════════════════════════════════════════════
-          PURPLE GRADIENT BANNER
+          FIXED TWO-COLUMN LAYOUT
+          Pinned to viewport below the navbar.
+          Bypasses parent overflow-y-auto completely.
+          Both panels scroll independently.
           ══════════════════════════════════════════════ */}
-      <div className="bg-gradient-to-r from-violet-700 via-purple-700 to-indigo-700 pt-[72px]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-10 md:py-14">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-violet-200 text-sm mb-6 font-medium">
-            <Link href="/tutorials" className="hover:text-white transition-colors">Tutorials</Link>
-            <ChevronRight className="w-4 h-4 opacity-60" />
-            <span className="text-white">{CATEGORY_NAMES[tutorial.category]}</span>
-          </nav>
-
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight mb-4 max-w-4xl">
-            {tutorial.title}
-          </h1>
-
-          {tutorial.summary && (
-            <p className="text-violet-100 text-lg leading-relaxed max-w-3xl mb-6">{tutorial.summary}</p>
-          )}
-
-          {/* Meta chips */}
-          <div className="flex flex-wrap gap-3">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${diff.bg} ${diff.text} ${diff.border}`}>
-              <BarChart2 className="w-3 h-3" /> {tutorial.difficulty}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20">
-              <Clock className="w-3 h-3" /> {tutorial.time}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20">
-              <Layers className="w-3 h-3" /> {CATEGORY_NAMES[tutorial.category]}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════
-          TWO-COLUMN LAYOUT: Sidebar + Main
-          ══════════════════════════════════════════════ */}
-      <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row">
-
-        {/* ─── LEFT SIDEBAR ─────────────────────────────── */}
-        <aside className="hidden lg:block w-64 xl:w-72 flex-shrink-0 border-r border-slate-200">
-          <div className="sticky top-[72px] h-[calc(100vh-72px)] overflow-y-auto py-8 px-5">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-md bg-violet-100 flex items-center justify-center">
-                <Layers className="w-4 h-4 text-violet-600" />
-              </div>
-              <span className="font-bold text-slate-700 text-sm">{CATEGORY_NAMES[tutorial.category]}</span>
+      <div
+        className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans flex flex-row"
+        style={{ position: 'fixed', top: '72px', left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: 1 }}
+      >
+        {/* ─── LEFT SIDEBAR — independent scroll ── */}
+        <aside
+          className="hidden lg:flex flex-col w-72 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 overflow-y-auto py-8 px-5"
+          style={{ minHeight: 0 }}
+        >
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-7 h-7 rounded-md bg-violet-100 flex items-center justify-center">
+              <Layers className="w-4 h-4 text-violet-600" />
             </div>
-
-            <nav className="flex flex-col gap-1 border-l-2 border-slate-100 pl-3 ml-1">
-              {relatedTutorials.map((rt) => {
-                const isActive = rt.slug === tutorial.slug
-                return (
-                  <Link
-                    key={String(rt._id)}
-                    href={`/tutorials/${rt.slug}`}
-                    className={`relative py-2 px-3 rounded-r-lg text-sm transition-colors leading-snug ${
-                      isActive
-                        ? 'text-violet-700 font-semibold bg-violet-50'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
-                  >
-                    {isActive && (
-                      <span className="absolute -left-[14px] top-0 bottom-0 w-0.5 bg-violet-600 rounded" />
-                    )}
-                    {rt.title}
-                  </Link>
-                )
-              })}
-            </nav>
+            <span className="font-bold text-slate-700 text-sm">{CATEGORY_NAMES[tutorial.category]}</span>
           </div>
+
+          <nav className="flex flex-col gap-1 border-l-2 border-slate-100 pl-3 ml-1">
+            {relatedTutorials.map((rt) => {
+              const isActive = rt.slug === tutorial.slug
+              return (
+                <Link
+                  key={String(rt._id)}
+                  href={`/tutorials/${rt.slug}`}
+                  className={`relative py-2.5 px-3 rounded-r-lg text-sm transition-colors leading-snug ${
+                    isActive
+                      ? 'text-violet-700 font-semibold bg-violet-50/80'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute -left-[14px] top-0 bottom-0 w-0.5 bg-violet-600 rounded" />
+                  )}
+                  {rt.title}
+                </Link>
+              )
+            })}
+          </nav>
         </aside>
 
-        {/* ─── MAIN CONTENT ─────────────────────────────── */}
-        <main className="flex-1 min-w-0 px-6 md:px-12 lg:px-16 py-10 lg:py-14">
+        {/* ─── RIGHT MAIN CONTENT — fills remaining width, independent scroll ── */}
+        <main
+          className="flex-1 min-w-0 overflow-y-auto pb-20 lg:pt-8 px-6 md:px-10"
+          style={{ minHeight: 0 }}
+        >
+          
+          {/* ══════════════════════════════════════════════
+              PURPLE GRADIENT BANNER (Inside Main)
+              Fixed: uses padding-based height, no max-h constraint
+              ══════════════════════════════════════════════ */}
+          <div className="-mx-6 md:-mx-10 bg-gradient-to-r from-violet-700 via-purple-700 to-indigo-700 lg:rounded-3xl shadow-lg overflow-hidden mb-10">
+            <div className="px-6 md:px-10 py-8">
+              {/* Breadcrumb */}
+              <nav className="flex items-center gap-2 text-violet-200 text-sm mb-4 font-medium">
+                <Link href="/tutorials" className="hover:text-white transition-colors">Tutorials</Link>
+                <ChevronRight className="w-4 h-4 opacity-60" />
+                <span className="text-white">{CATEGORY_NAMES[tutorial.category]}</span>
+              </nav>
+
+              <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight tracking-tight mb-3 max-w-3xl">
+                {tutorial.title}
+              </h1>
+
+              {tutorial.summary && (
+                <p className="text-violet-100 text-base leading-relaxed max-w-2xl mb-4">{tutorial.summary}</p>
+              )}
+
+              {/* Meta chips */}
+              <div className="flex flex-wrap gap-2">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${diff.bg} ${diff.text} ${diff.border}`}>
+                  <BarChart2 className="w-3 h-3" /> {tutorial.difficulty}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20">
+                  <Clock className="w-3 h-3" /> {tutorial.time}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20">
+                  <Layers className="w-3 h-3" /> {CATEGORY_NAMES[tutorial.category]}
+                </span>
+              </div>
+            </div>
+          </div>
+
+
 
           {/* Mobile: in-category list */}
           <details className="lg:hidden mb-8 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden group">
@@ -146,15 +159,37 @@ export default async function TutorialDetailPage(props) {
             </nav>
           </details>
 
-          {/* ── Topic Pills ── */}
-          {topics.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-10">
-              {topics.map((topic, i) => (
-                <span key={i}
-                  className="px-3 py-1 bg-violet-50 text-violet-700 border border-violet-200 rounded-full text-xs font-semibold tracking-wide">
-                  {topic}
-                </span>
-              ))}
+          {/* ── What You'll Learn ── */}
+          {whatYoullLearn.length > 0 && (
+            <div className="mb-8 p-6 bg-emerald-50 border border-emerald-200 rounded-2xl">
+              <h2 className="font-bold text-emerald-900 mb-4 flex items-center gap-2 text-lg">
+                <GraduationCap className="w-5 h-5 text-emerald-600" /> What You&apos;ll Learn
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {whatYoullLearn.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-emerald-800 text-sm leading-snug">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Topics Covered ── */}
+          {(topics.length > 0 || topicsCovered.length > 0) && (
+            <div className="mb-8">
+              <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
+                <Tag className="w-4 h-4 text-violet-500" /> Topics Covered
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {[...topics, ...topicsCovered].map((topic, i) => (
+                  <span key={i}
+                    className="px-3 py-1 bg-violet-50 text-violet-700 border border-violet-200 rounded-full text-xs font-semibold tracking-wide">
+                    {topic}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 
@@ -249,6 +284,6 @@ export default async function TutorialDetailPage(props) {
           </div>
         </main>
       </div>
-    </div>
+    </FixedPageLayout>
   )
 }

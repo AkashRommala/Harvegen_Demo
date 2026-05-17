@@ -13,8 +13,14 @@ const TutorialSchema = new mongoose.Schema(
     description: { type: String, required: true, trim: true },
     summary: { type: String, default: '' },
 
-    // Pill-shaped topic tags shown at the top
+    // Pill-shaped topic tags shown at the top (legacy)
     topics: [{ type: String, trim: true }],
+
+    // What You'll Learn section — checklist items
+    whatYoullLearn: [{ type: String, trim: true }],
+
+    // Topics Covered section — displayed as pill chips
+    topicsCovered: [{ type: String, trim: true }],
 
     // Structured content sections — replaces raw markdownContent
     sections: [{

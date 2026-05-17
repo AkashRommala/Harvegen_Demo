@@ -10,11 +10,10 @@ const CategorySchema = new mongoose.Schema(
 )
 
 // Auto-generate slug from name if not provided
-CategorySchema.pre('validate', function(next) {
+CategorySchema.pre('validate', function() {
   if (this.name && !this.slug) {
     this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
   }
-  next()
 })
 
 export default mongoose.models.Category || mongoose.model('Category', CategorySchema)

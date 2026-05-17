@@ -29,7 +29,7 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="h-screen bg-gray-950 flex overflow-hidden">
+    <div className="bg-gray-950 flex overflow-hidden pt-[72px]" style={{ height: '100vh' }}>
       <AdminSidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 pb-32">{children}</div>
