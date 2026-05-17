@@ -43,7 +43,7 @@ function StringListBuilder({ label, items, onAdd, onRemove, onChange, placeholde
 export default function TutorialForm({ initial = {}, isNew, endpoint, headers, onSuccess, onCancel }) {
   const [form, setForm] = useState({
     title: initial.title || '',
-    category: initial.category || 'c',
+    category: initial.category || '',
     description: initial.description || '',
     summary: initial.summary || '',
     time: initial.time || '',
@@ -69,7 +69,10 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
     fetch('/api/categories')
       .then(res => res.json())
       .then(json => {
-        if (json.success) setCategoriesList(json.data)
+        if (json.success && json.data.length > 0) {
+          setCategoriesList(json.data)
+          if (!form.category) set('category', json.data[0].slug)
+        }
       })
       .catch(err => console.error('Failed to load categories', err))
   }, [])
@@ -235,20 +238,6 @@ export default function TutorialForm({ initial = {}, isNew, endpoint, headers, o
           onChange={updateCoveredTopic}
           placeholder="e.g. GPIO, Interrupts, PWM, Timers"
           helpText="Displayed as pill chips in the 'Topics Covered' section."
-        />
-      </div>
-
-      {/* ── Topics (Legacy Tags) ── */}
-      <div className={section}>
-        <p className={sectionTitle}>🏷️ Topic Tags (Pill-shaped)</p>
-        <StringListBuilder
-          label="Topics"
-          items={form.topics}
-          onAdd={addTopic}
-          onRemove={removeTopic}
-          onChange={updateTopic}
-          placeholder="e.g. GPIO, Interrupts, PWM"
-          helpText="Each topic becomes a pill tag shown at the top of the tutorial."
         />
       </div>
 

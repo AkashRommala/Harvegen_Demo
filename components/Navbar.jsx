@@ -90,10 +90,12 @@ function Navbar() {
             : 'bg-white/80 backdrop-blur-sm border-b border-gray-100'
         }`}
       >
-        <div className="flex items-center h-[72px] w-full px-4 sm:px-6 lg:px-12 gap-2 lg:gap-6 overflow-hidden">
+        {/* CSS Grid: logo | nav-center | right — each zone has its own column, no overlap possible */}
+        <div className="grid h-[72px] w-full px-4 sm:px-6 lg:px-12 items-center"
+             style={{ gridTemplateColumns: 'auto 1fr auto' }}>
 
-          {/* LOGO (Left) */}
-          <div className="flex flex-shrink-0 items-center">
+          {/* COLUMN 1 — LOGO */}
+          <div className="flex items-center">
             <Link href="/" className={`flex items-center gap-2 font-bold flex-shrink-0 ${
               isHomePage && !scrolled ? 'text-white' : 'text-gray-900'
             }`}>
@@ -102,34 +104,30 @@ function Navbar() {
               }`}>
                 <FiZap className="w-5 h-5" />
               </div>
-              <span className="text-lg font-semibold whitespace-nowrap">
-                Harvegen
-              </span>
+              <span className="text-lg font-semibold whitespace-nowrap">Harvegen</span>
             </Link>
           </div>
 
-          {/* DESKTOP MENU (Center) - grows to fill space */}
-          <div className="hidden lg:flex flex-1 items-center justify-center gap-4 xl:gap-8 min-w-0">
+          {/* COLUMN 2 — NAV LINKS (centered in the middle column) */}
+          <div className="hidden lg:flex items-center justify-center gap-4 xl:gap-7 overflow-hidden px-4">
             {navLinks.map((link) => {
               const active = pathname === link.path
               return (
                 <Link
                   key={link.path}
                   href={link.path}
-                  className={`relative px-2 xl:px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                  className={`relative py-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                     active
                       ? isHomePage && !scrolled ? 'text-primary-400' : 'text-primary-600'
                       : isHomePage && !scrolled ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   {link.name}
-
-                  {/* Underline animation */}
                   <span
                     className={`absolute left-0 bottom-0 h-0.5 transition-all duration-300 ${
-                      active 
+                      active
                         ? isHomePage && !scrolled ? 'bg-primary-400 w-full' : 'bg-primary-600 w-full'
-                        : 'w-0 group-hover:w-full'
+                        : 'w-0'
                     }`}
                   />
                 </Link>
@@ -137,69 +135,66 @@ function Navbar() {
             })}
           </div>
 
-          {/* RIGHT SIDE (Search, Theme, Profile) — flex-shrink-0 keeps it intact */}
-          <div className="flex flex-shrink-0 items-center gap-2 xl:gap-3">
-            {/* SEARCH BAR */}
+          {/* COLUMN 3 — RIGHT SIDE */}
+          <div className="flex items-center gap-2 xl:gap-3">
+            {/* SEARCH — only at xl+ */}
             <div className="hidden xl:flex items-center">
               <form onSubmit={handleSearch} className={`relative flex items-center rounded-full border transition-all duration-300 ${
-              isHomePage && !scrolled 
-                ? 'bg-white/10 border-white/20 hover:bg-white/20' 
-                : 'bg-gray-100 border-gray-200 hover:border-gray-300'
-            }`}>
-              <input
-                type="text"
-                placeholder="Search tutorials..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className={`w-36 xl:w-52 px-4 py-2 pl-10 text-sm rounded-full outline-none bg-transparent transition-all duration-300 ${
-                  isHomePage && !scrolled 
-                    ? 'text-white placeholder-white/60 focus:ring-2 focus:ring-white/30' 
-                    : 'text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500/30'
-                }`}
-              />
-              <FiSearch 
-                type="submit"
-                className={`absolute left-3 w-4 h-4 cursor-pointer ${
-                  isHomePage && !scrolled ? 'text-white/70' : 'text-gray-400'
-                }`} 
-              />
-            </form>
+                isHomePage && !scrolled
+                  ? 'bg-white/10 border-white/20 hover:bg-white/20'
+                  : 'bg-gray-100 border-gray-200 hover:border-gray-300'
+              }`}>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className={`w-28 xl:w-40 px-4 py-2 pl-9 text-sm rounded-full outline-none bg-transparent transition-all duration-300 ${
+                    isHomePage && !scrolled
+                      ? 'text-white placeholder-white/60 focus:ring-2 focus:ring-white/30'
+                      : 'text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500/30'
+                  }`}
+                />
+                <FiSearch
+                  className={`absolute left-3 w-3.5 h-3.5 cursor-pointer ${
+                    isHomePage && !scrolled ? 'text-white/70' : 'text-gray-400'
+                  }`}
+                />
+              </form>
             </div>
 
-            {/* PROFILE BUTTON & THEME */}
             <ThemeToggle />
-            
+
             {isLoggedIn && user ? (
               <>
                 {user.role === 'admin' && (
                   <Link
                     href="/admin"
                     className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-                      isHomePage && !scrolled 
-                        ? 'bg-primary-500/20 text-white border border-primary-400/50 hover:bg-primary-500/40' 
+                      isHomePage && !scrolled
+                        ? 'bg-primary-500/20 text-white border border-primary-400/50 hover:bg-primary-500/40'
                         : 'bg-primary-50 text-primary-600 border border-primary-200 hover:bg-primary-100'
                     }`}
                   >
                     <FiShield className="w-4 h-4 flex-shrink-0" />
-                    <span className="hidden xl:inline">Admin Dashboard</span>
-                    <span className="xl:hidden">Admin</span>
+                    <span className="hidden xl:inline">Admin</span>
                   </Link>
                 )}
                 <Link
                   href="/profile"
                   className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full transition-all duration-300 flex-shrink-0 ${
-                    isHomePage && !scrolled 
-                      ? 'bg-white/20 hover:bg-white/30 text-white' 
+                    isHomePage && !scrolled
+                      ? 'bg-white/20 hover:bg-white/30 text-white'
                       : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                   }`}
                 >
-                  <img 
-                    src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'} 
+                  <img
+                    src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
                     alt={user?.name || 'User'}
                     className="w-7 h-7 rounded-full bg-white object-cover flex-shrink-0"
                   />
-                  <div className="hidden md:flex flex-col min-w-0 max-w-[100px] xl:max-w-[130px]">
+                  <div className="hidden lg:flex flex-col min-w-0 max-w-[90px] xl:max-w-[120px]">
                     <span className="text-xs font-medium truncate leading-tight">{user?.name || 'User'}</span>
                     <span className={`text-[10px] truncate leading-tight ${
                       isHomePage && !scrolled ? 'text-white/70' : 'text-gray-500'
@@ -209,8 +204,8 @@ function Navbar() {
                 <button
                   onClick={handleLogout}
                   className={`p-2 rounded-full transition-all duration-300 flex-shrink-0 ${
-                    isHomePage && !scrolled 
-                      ? 'bg-white/20 hover:bg-white/30 text-white' 
+                    isHomePage && !scrolled
+                      ? 'bg-white/20 hover:bg-white/30 text-white'
                       : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                   }`}
                   title="Logout"
@@ -219,12 +214,12 @@ function Navbar() {
                 </button>
               </>
             ) : (
-              <div className="flex items-center gap-2" suppressHydrationWarning>
+              <div suppressHydrationWarning>
                 <button
                   onClick={() => setShowLoginModal(true)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
-                    isHomePage && !scrolled 
-                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20' 
+                    isHomePage && !scrolled
+                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
                       : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                   }`}
                 >
@@ -233,13 +228,11 @@ function Navbar() {
                 </button>
               </div>
             )}
-          </div>
 
-          {/* MOBILE MENU BUTTON */}
-          <div className="lg:hidden flex items-center ml-4">
+            {/* MOBILE HAMBURGER */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`lg:hidden p-2 rounded-lg transition-colors ${
                 isHomePage && !scrolled ? 'text-white hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100'
               }`}
             >

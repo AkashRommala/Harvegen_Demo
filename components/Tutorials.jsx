@@ -5,13 +5,6 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { TutorialCardSkeleton } from './ui/skeletons'
 
-const TABS = [
-  { id: 'c', label: 'Embedded C' },
-  { id: 'basics', label: 'MCU Basics' },
-  { id: 'proto', label: 'Protocols' },
-  { id: 'rtos', label: 'RTOS' },
-]
-
 const DIFFICULTY_COLORS = {
   Beginner: 'text-emerald-700 border-emerald-200 bg-emerald-50',
   Intermediate: 'text-amber-700 border-amber-200 bg-amber-50',
@@ -19,7 +12,8 @@ const DIFFICULTY_COLORS = {
 }
 
 function Tutorials() {
-  const [activeTab, setActiveTab] = useState('c')
+  const [activeTab, setActiveTab] = useState('')
+  const [categories, setCategories] = useState([])
   const [tutorials, setTutorials] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -27,7 +21,26 @@ function Tutorials() {
   const [page, setPage] = useState(1)
   const limit = 9
 
+  // Fetch Categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories')
+        const json = await res.json()
+        if (json.success && json.data.length > 0) {
+          setCategories(json.data)
+          // Set first category as active by default if none selected
+          if (!activeTab) setActiveTab(json.data[0].slug)
+        }
+      } catch (err) {
+        console.error('Failed to load categories', err)
+      }
+    }
+    fetchCategories()
+  }, []) // activeTab is intentionally omitted here to only run on mount
+
   const fetchTutorials = useCallback(async () => {
+    if (!activeTab) return // Don't fetch until we have an active category
     setLoading(true)
     setError(null)
     try {
@@ -44,10 +57,14 @@ function Tutorials() {
     }
   }, [activeTab, page])
 
-  useEffect(() => { fetchTutorials() }, [fetchTutorials])
+  useEffect(() => {
+    if (activeTab) {
+      fetchTutorials()
+    }
+  }, [fetchTutorials, activeTab])
 
-  const handleTabChange = (id) => {
-    setActiveTab(id)
+  const handleTabChange = (slug) => {
+    setActiveTab(slug)
     setPage(1)
   }
 
@@ -83,19 +100,19 @@ function Tutorials() {
         <div className="max-w-[1400px] mx-auto px-8">
           {/* Tab Navigation */}
           <div className="flex flex-wrap gap-2 mb-12 pb-6 border-b border-gray-200">
-            {TABS.map(tab => (
+            {categories.map(cat => (
               <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? 'default' : 'ghost'}
+                key={cat.slug}
+                variant={activeTab === cat.slug ? 'default' : 'ghost'}
                 size="lg"
-                onClick={() => handleTabChange(tab.id)}
+                onClick={() => handleTabChange(cat.slug)}
                 className={`px-6 py-3 font-semibold transition-all ${
-                  activeTab === tab.id
+                  activeTab === cat.slug
                     ? 'bg-primary-600 text-white shadow-lg hover:shadow-xl'
                     : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300 hover:text-primary-600 hover:shadow-md'
                 }`}
               >
-                {tab.label}
+                {cat.name}
               </Button>
             ))}
           </div>

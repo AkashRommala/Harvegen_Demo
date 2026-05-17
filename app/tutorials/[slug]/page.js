@@ -18,12 +18,7 @@ export async function generateMetadata(props) {
   }
 }
 
-const CATEGORY_NAMES = {
-  c: 'Embedded C',
-  basics: 'MCU Basics',
-  proto: 'Protocols',
-  rtos: 'RTOS',
-}
+import Category from '@/models/Category'
 
 const DIFFICULTY_CONFIG = {
   Beginner:     { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-300' },
@@ -36,6 +31,10 @@ export default async function TutorialDetailPage(props) {
   await connectDB()
   const tutorial = await Tutorial.findOne({ slug: params.slug }).lean()
   if (!tutorial) notFound()
+
+  // Fetch the human-readable category name dynamically
+  const categoryDoc = await Category.findOne({ slug: tutorial.category }).lean()
+  const categoryName = categoryDoc ? categoryDoc.name : tutorial.category
 
   // Fetch all tutorials in the same category for the sidebar
   const relatedTutorials = await Tutorial.find({ category: tutorial.category })
@@ -73,7 +72,7 @@ export default async function TutorialDetailPage(props) {
             <div className="w-7 h-7 rounded-md bg-violet-100 flex items-center justify-center">
               <Layers className="w-4 h-4 text-violet-600" />
             </div>
-            <span className="font-bold text-slate-700 text-sm">{CATEGORY_NAMES[tutorial.category]}</span>
+            <span className="font-bold text-slate-700 text-sm">{categoryName}</span>
           </div>
 
           <nav className="flex flex-col gap-1 border-l-2 border-slate-100 pl-3 ml-1">
@@ -115,7 +114,7 @@ export default async function TutorialDetailPage(props) {
               <nav className="flex items-center gap-2 text-violet-200 text-sm mb-4 font-medium">
                 <Link href="/tutorials" className="hover:text-white transition-colors">Tutorials</Link>
                 <ChevronRight className="w-4 h-4 opacity-60" />
-                <span className="text-white">{CATEGORY_NAMES[tutorial.category]}</span>
+                <span className="text-white">{categoryName}</span>
               </nav>
 
               <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight tracking-tight mb-3 max-w-3xl">
@@ -135,13 +134,20 @@ export default async function TutorialDetailPage(props) {
                   <Clock className="w-3 h-3" /> {tutorial.time}
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20">
-                  <Layers className="w-3 h-3" /> {CATEGORY_NAMES[tutorial.category]}
+                  <Layers className="w-3 h-3" /> {categoryName}
                 </span>
               </div>
             </div>
           </div>
 
 
+
+          {/* ── Short description (SEO field, also shown to users) ── */}
+          {tutorial.description && (
+            <p className="text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-6 -mt-4">
+              {tutorial.description}
+            </p>
+          )}
 
           {/* Mobile: in-category list */}
           <details className="lg:hidden mb-8 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden group">

@@ -6,7 +6,6 @@ const TutorialSchema = new mongoose.Schema(
     slug: { type: String, unique: true, index: true },
     category: {
       type: String,
-      enum: ['c', 'basics', 'proto', 'rtos'],
       required: true,
       index: true,
     },
@@ -65,4 +64,9 @@ TutorialSchema.pre('save', async function () {
 
 TutorialSchema.index({ title: 'text', description: 'text' })
 
-export default mongoose.models.Tutorial || mongoose.model('Tutorial', TutorialSchema)
+// Delete the cached model to force Mongoose to re-compile the schema during development HMR
+if (mongoose.models.Tutorial) {
+  delete mongoose.models.Tutorial
+}
+
+export default mongoose.model('Tutorial', TutorialSchema)
