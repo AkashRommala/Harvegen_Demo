@@ -138,10 +138,10 @@ function Home() {
                 <span className="w-8 h-px bg-primary-600" />
                 Learning Path
               </div>
-              <h2 className="text-gray-900 mb-4 text-4xl font-bold">Latest Courses</h2>
+              <h2 className="text-gray-900 mb-4 text-4xl font-bold">Latest Modules</h2>
               <p className="text-gray-600 text-lg leading-relaxed">Step-by-step guides from register-level basics to production RTOS patterns.</p>
             </div>
-            <Link href="/tutorials" className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-semibold hover:border-gray-300 hover:text-gray-900 hover:shadow-lg transition-all shadow-md">All Courses →</Link>
+            <Link href="/tutorials" className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-semibold hover:border-gray-300 hover:text-gray-900 hover:shadow-lg transition-all shadow-md">All Modules →</Link>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -163,7 +163,7 @@ function Home() {
                       <span className="flex items-center gap-1 text-sm text-gray-500">
                         <span className="text-primary-600 font-bold">⏱</span> {tut.time}
                       </span>
-                      <Button variant="default" size="sm" className="shadow-md hover:shadow-lg">View Course</Button>
+                      <Button variant="default" size="sm" className="shadow-md hover:shadow-lg">View Module</Button>
                     </div>
                   </div>
                 </Link>
@@ -184,7 +184,7 @@ function Home() {
                       <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">{tut.desc}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-500">⏱ {tut.time}</span>
-                        <Button variant="default" size="sm">View Course</Button>
+                        <Button variant="default" size="sm">View Module</Button>
                       </div>
                     </div>
                   </Link>
