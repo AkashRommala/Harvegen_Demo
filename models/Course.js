@@ -5,6 +5,7 @@ const CourseSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, trim: true, lowercase: true },
     description: { type: String, default: '', trim: true },
+    order: { type: Number, default: 0 },
   },
   { timestamps: true }
 )
@@ -16,9 +17,6 @@ CourseSchema.pre('validate', function() {
   }
 })
 
-// Delete the cached model to force Mongoose to re-compile the schema during development HMR
-if (mongoose.models.Course) {
-  delete mongoose.models.Course
-}
+const Course = mongoose.models.Course || mongoose.model('Course', CourseSchema)
 
-export default mongoose.models.Course || mongoose.model('Course', CourseSchema)
+export default Course

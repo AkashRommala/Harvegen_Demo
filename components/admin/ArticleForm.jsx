@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FiLoader, FiPlus, FiTrash2, FiCode, FiChevronUp, FiChevronDown } from 'react-icons/fi'
 import Editor from '@monaco-editor/react'
 
@@ -43,14 +43,11 @@ function StringListBuilder({ label, items, onAdd, onRemove, onChange, placeholde
 export default function ArticleForm({ initial = {}, isNew, endpoint, headers, onSuccess, onCancel }) {
   const [form, setForm] = useState({
     title: initial.title || '',
-    category: initial.category || '',
     description: initial.description || '',
-    summary: initial.summary || '',
     time: initial.time || '',
     difficulty: initial.difficulty || 'Beginner',
     featured: initial.featured || false,
-    // New structured fields
-    topics: initial.topics?.length > 0 ? initial.topics : [''],
+    // Structured fields
     whatYoullLearn: initial.whatYoullLearn?.length > 0 ? initial.whatYoullLearn : [''],
     topicsCovered: initial.topicsCovered?.length > 0 ? initial.topicsCovered : [''],
     sections: initial.sections?.length > 0 ? initial.sections : [{ heading: '', description: '' }],
@@ -63,19 +60,6 @@ export default function ArticleForm({ initial = {}, isNew, endpoint, headers, on
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [coursesList, setCoursesList] = useState([])
-
-  useEffect(() => {
-    fetch('/api/courses')
-      .then(res => res.json())
-      .then(json => {
-        if (json.success && json.data.length > 0) {
-          setCoursesList(json.data)
-          if (!form.category) set('category', json.data[0].slug)
-        }
-      })
-      .catch(err => console.error('Failed to load courses', err))
-  }, [])
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
@@ -145,14 +129,18 @@ export default function ArticleForm({ initial = {}, isNew, endpoint, headers, on
       if (cleanSections.length === 0) throw new Error('At least one content section is required.')
 
       const payload = {
-        ...form,
-        topics: form.topics.filter(t => t.trim()),
+        title: form.title,
+        description: form.description,
+        time: form.time,
+        difficulty: form.difficulty,
+        featured: form.featured,
         whatYoullLearn: form.whatYoullLearn.filter(t => t.trim()),
         topicsCovered: form.topicsCovered.filter(t => t.trim()),
         sections: cleanSections,
         practiceExercises: form.practiceExercises.filter(p => p.trim()),
         prerequisites: form.prerequisites.filter(p => p.trim()),
         additionalResources: form.additionalResources.filter(r => r.label.trim() || r.url.trim()),
+        codeSections: form.codeSections,
       }
 
       const id = initial.slug || initial._id
@@ -180,17 +168,11 @@ export default function ArticleForm({ initial = {}, isNew, endpoint, headers, on
 
       {/* ── Meta ── */}
       <div>
-        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Title *</label>
+        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Article Title *</label>
         <input value={form.title} onChange={e => set('title', e.target.value)} required className={input} />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Category *</label>
-          <select value={form.category} onChange={e => set('category', e.target.value)} className={input}>
-            {coursesList.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-          </select>
-        </div>
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Difficulty *</label>
           <select value={form.difficulty} onChange={e => set('difficulty', e.target.value)} className={input}>
@@ -204,13 +186,15 @@ export default function ArticleForm({ initial = {}, isNew, endpoint, headers, on
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Description (SEO) *</label>
-        <textarea value={form.description} onChange={e => set('description', e.target.value)} required rows={2} className={`${input} resize-none`} />
-      </div>
-
-      <div>
-        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Summary (Banner subtitle)</label>
-        <textarea value={form.summary} onChange={e => set('summary', e.target.value)} rows={2} className={`${input} resize-none`} placeholder="Short intro shown in the purple banner..." />
+        <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide">Article Description *</label>
+        <textarea
+          value={form.description}
+          onChange={e => set('description', e.target.value)}
+          required
+          rows={3}
+          placeholder="A concise description of what this article covers — shown below the title in the article banner."
+          className={`${input} resize-none`}
+        />
       </div>
 
       {/* ── What You'll Learn ── */}

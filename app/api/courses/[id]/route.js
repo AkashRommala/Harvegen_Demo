@@ -3,7 +3,6 @@ import connectDB from '@/lib/mongodb'
 import Course from '@/models/Course'
 import { errorResponse, withErrorHandler, requireAdmin } from '@/lib/apiHelpers'
 
-// PUT /api/categories/[id]
 export const PUT = withErrorHandler(async (request, props) => {
   const params = await props.params
   const authResponse = await requireAdmin(request)
@@ -12,14 +11,19 @@ export const PUT = withErrorHandler(async (request, props) => {
   await connectDB()
   const body = await request.json()
 
-  const existing = await Course.findOne({ slug: body.slug, _id: { $ne: params.id } })
+  if (!body.name?.trim()) return errorResponse('Course name is required', 400)
+
+  // Auto-regenerate slug from updated name
+  const newSlug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+
+  const existing = await Course.findOne({ slug: newSlug, _id: { $ne: params.id } })
   if (existing) {
-    return errorResponse('Another course with this slug already exists', 409)
+    return errorResponse('Another course with this name already exists', 409)
   }
 
   const updated = await Course.findByIdAndUpdate(
     params.id,
-    { name: body.name, slug: body.slug, description: body.description },
+    { name: body.name.trim(), slug: newSlug },
     { new: true, runValidators: true }
   )
   if (!updated) return errorResponse('Course not found', 404)

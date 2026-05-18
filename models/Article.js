@@ -6,7 +6,7 @@ const ArticleSchema = new mongoose.Schema(
     slug: { type: String, unique: true, index: true },
     category: {
       type: String,
-      required: true,
+      default: '',
       index: true,
     },
     description: { type: String, required: true, trim: true },
@@ -64,9 +64,13 @@ ArticleSchema.pre('save', async function () {
 
 ArticleSchema.index({ title: 'text', description: 'text' })
 
-// Delete the cached model to force Mongoose to re-compile the schema during development HMR
-if (mongoose.models.Article) {
+// In dev, Next.js hot-reload changes module code but the old Mongoose model
+// stays in the global mongoose.models cache. Force re-registration so schema
+// changes (like removing required:true from category) take effect immediately.
+if (process.env.NODE_ENV === 'development') {
   delete mongoose.models.Article
 }
 
-export default mongoose.models.Article || mongoose.model('Article', ArticleSchema)
+const Article = mongoose.models.Article || mongoose.model('Article', ArticleSchema)
+
+export default Article

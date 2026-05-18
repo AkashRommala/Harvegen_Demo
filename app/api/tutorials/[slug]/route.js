@@ -1,5 +1,6 @@
 import connectDB from '@/lib/mongodb'
 import Tutorial from '@/models/Tutorial'
+import Article from '@/models/Article' // required for populate('articles') to resolve
 import { TutorialUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '@/lib/apiHelpers'
 

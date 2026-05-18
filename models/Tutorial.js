@@ -16,6 +16,7 @@ const TutorialSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Article'
     }],
+    order: { type: Number, default: 0 },
   },
   { timestamps: true }
 )
@@ -32,9 +33,7 @@ TutorialSchema.pre('save', async function () {
   }
 })
 
-// Delete the cached model to force Mongoose to re-compile the schema during development HMR
-if (mongoose.models.Tutorial) {
-  delete mongoose.models.Tutorial
-}
+// Standard safe model registration — only register if not already cached
+const Tutorial = mongoose.models.Tutorial || mongoose.model('Tutorial', TutorialSchema)
 
-export default mongoose.models.Tutorial || mongoose.model('Tutorial', TutorialSchema)
+export default Tutorial

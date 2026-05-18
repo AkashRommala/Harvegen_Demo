@@ -30,10 +30,10 @@ export default async function TutorialModulePage(props) {
   // Course info
   const course = await Course.findOne({ slug: currentModule.course }).lean()
 
-  // All modules in the same course for the sidebar
+  // All modules in the same course for the sidebar — sorted by admin-defined order
   const allModules = await Tutorial.find({ course: currentModule.course })
     .populate('articles', 'title slug time difficulty')
-    .sort({ createdAt: 1 })
+    .sort({ order: 1, createdAt: -1 })
     .lean()
 
   // Fetch the first article's FULL content to display by default

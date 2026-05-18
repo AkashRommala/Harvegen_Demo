@@ -1,5 +1,6 @@
 import connectDB from '@/lib/mongodb'
 import Tutorial from '@/models/Tutorial'
+import Article from '@/models/Article' // required for populate('articles') to resolve
 import { TutorialSchema } from '@/lib/validations'
 import { successResponse, errorResponse, requireAdmin, withErrorHandler } from '@/lib/apiHelpers'
 
@@ -19,7 +20,7 @@ export const GET = withErrorHandler(async (request) => {
   const [tutorials, total] = await Promise.all([
     Tutorial.find(filter)
       .populate('articles', 'title slug time difficulty description')
-      .sort({ createdAt: -1 })
+      .sort({ order: 1, createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
@@ -43,4 +44,22 @@ export const POST = withErrorHandler(async (request) => {
 
   const tutorial = await Tutorial.create(parsed.data)
   return successResponse(tutorial, 201)
+})
+
+// PATCH /api/tutorials — bulk reorder modules
+export const PATCH = withErrorHandler(async (request) => {
+  const guard = await requireAdmin(request)
+  if (guard) return guard
+
+  await connectDB()
+  const { orderedIds } = await request.json()
+  if (!Array.isArray(orderedIds)) return errorResponse('orderedIds must be an array', 400)
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      Tutorial.findByIdAndUpdate(id, { order: index })
+    )
+  )
+
+  return successResponse({ message: 'Order saved' })
 })
