@@ -6,8 +6,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    min-width: 1280px;          /* prevent layout from collapsing below desktop width */
-    overflow-x: auto;           /* show horizontal scrollbar instead of collapsing */
+    overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
@@ -16,7 +15,6 @@
     @apply bg-white text-slate-900;
     font-size: 16px;
     line-height: 1.6;
-    min-width: 1280px;          /* belt-and-suspenders: also set on body */
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
   }

@@ -98,20 +98,20 @@ export default function HeroBanner() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
                 <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="max-w-[1400px] mx-auto px-8 w-full pt-32 pb-20">
-                    <div className="flex items-center gap-3 mb-4 animate-fade-in">
-                      <span className="w-12 h-px bg-primary-400" />
-                      <span className="text-primary-400 font-semibold tracking-wider uppercase text-sm">
+                  <div className="max-w-[1400px] mx-auto px-5 sm:px-8 w-full pt-24 sm:pt-32 pb-16 sm:pb-20">
+                    <div className="flex items-center gap-3 mb-3 sm:mb-4 animate-fade-in">
+                      <span className="w-8 sm:w-12 h-px bg-primary-400" />
+                      <span className="text-primary-400 font-semibold tracking-wider uppercase text-xs sm:text-sm">
                         {slide.subtitle}
                       </span>
                     </div>
-                    <h1 className="text-white font-display text-5xl md:text-7xl font-bold mb-6 leading-tight animate-slide-up">
+                    <h1 className="text-white font-display text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-slide-up">
                       {slide.title}
                     </h1>
-                    <p className="text-gray-300 text-xl md:text-2xl max-w-[700px] mb-10 leading-relaxed animate-slide-up">
+                    <p className="text-gray-300 text-base sm:text-xl md:text-2xl max-w-[700px] mb-6 sm:mb-10 leading-relaxed animate-slide-up">
                       {slide.description}
                     </p>
-                    <div className="flex gap-4 flex-wrap animate-slide-up">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-slide-up">
                       <Button
                         href={slide.ctaLink}
                         variant="default"
@@ -139,17 +139,17 @@ export default function HeroBanner() {
         {/* Navigation Arrows */}
         <button
           onClick={() => emblaApi?.scrollPrev()}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300"
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300"
           aria-label="Previous slide"
         >
-          <FiChevronLeft className="w-6 h-6" />
+          <FiChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
         <button
           onClick={() => emblaApi?.scrollNext()}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300"
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300"
           aria-label="Next slide"
         >
-          <FiChevronRight className="w-6 h-6" />
+          <FiChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
 
@@ -173,8 +173,8 @@ export default function HeroBanner() {
         ))}
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 right-8 z-20 flex flex-col items-center text-white/60">
+      {/* Scroll Indicator — hidden on small screens */}
+      <div className="hidden sm:flex absolute bottom-8 right-8 z-20 flex-col items-center text-white/60">
         <span className="text-xs tracking-wider uppercase mb-2">Scroll</span>
         <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent animate-bounce" />
       </div>
